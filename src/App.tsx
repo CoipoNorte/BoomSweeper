@@ -101,7 +101,7 @@ function App() {
   const over = state.gameStatus === 'won' || state.gameStatus === 'lost'
 
   return (
-    <div className="flex flex-col h-screen h-[100dvh]" style={{ background: '#0d0d1a' }}>
+    <div className="flex flex-col h-screen h-[100dvh] overflow-hidden" style={{ background: '#0d0d1a' }}>
       <ParticleLayer particles={particles} />
       <ScorePopups floats={floats} />
       {toast && <SpecialToast specialType={toast} onDone={() => setToast(null)} />}

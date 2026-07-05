@@ -11,7 +11,8 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
   useEffect(() => { getHighScores().then(setScores) }, [])
 
   return (
-    <div className="min-h-screen overflow-y-auto flex items-center justify-center px-6 py-10">
+    <div className="h-full overflow-y-auto">
+    <div className="min-h-full flex items-center justify-center px-6 py-10">
       <div className="w-full" style={{ maxWidth: 380 }}>
 
         {/* ── Logo ── */}
@@ -149,6 +150,7 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
           </div>
         </Modal>
       )}
+    </div>
     </div>
   )
 }

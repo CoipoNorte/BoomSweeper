@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-html, body, #root {
+html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
@@ -11,6 +11,10 @@ html, body, #root {
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   touch-action: manipulation;
+}
+
+#root {
+  height: 100%;
 }
 
 /* cell shimmer for specials */

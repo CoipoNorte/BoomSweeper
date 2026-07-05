@@ -81,7 +81,13 @@ export const CellComponent = memo(function CellComponent({
           navigator.vibrate?.(20)
         }, 400)
       }, [cell.row, cell.col, onLongPress])}
-      onTouchEnd={useCallback(() => clearTimeout(lp.current), [])}
+      onTouchEnd={useCallback((e: React.TouchEvent) => {
+        clearTimeout(lp.current)
+        if (wasLp.current) {
+          e.preventDefault()
+          wasLp.current = false
+        }
+      }, [])}
       onTouchMove={useCallback((e: React.TouchEvent) => {
         if (!e.touches.length) { clearTimeout(lp.current); return }
         const t = e.touches[0]
