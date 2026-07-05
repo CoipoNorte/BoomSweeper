@@ -15,6 +15,8 @@ export const CellComponent = memo(function CellComponent({
 }: Props) {
   const lp = useRef(0)
   const wasLp = useRef(false)
+  const touchMoved = useRef(false)
+  const touchHandled = useRef(false)
   const touchStartPos = useRef({ x: 0, y: 0 })
 
   const fs = Math.max(9, cellSize * 0.45)
@@ -66,15 +68,21 @@ export const CellComponent = memo(function CellComponent({
       style={{ width: cellSize, height: cellSize, fontSize: fs, animation: anim || undefined }}
       onClick={useCallback((e: React.MouseEvent) => {
         e.preventDefault()
-        if (wasLp.current) { wasLp.current = false; return }
+        // On mobile, touch handlers already did the work — block click entirely
+        if (touchHandled.current) { touchHandled.current = false; return }
+        // Desktop: normal click
         if (flagMode && !cell.isRevealed) onRightClick(cell.row, cell.col)
         else onClick(cell.row, cell.col)
       }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
       onContextMenu={useCallback((e: React.MouseEvent) => { e.preventDefault(); onRightClick(cell.row, cell.col) }, [cell.row, cell.col, onRightClick])}
       onTouchStart={useCallback((e: React.TouchEvent) => {
+        // Reset all state for this touch
         wasLp.current = false
+        touchMoved.current = false
+        touchHandled.current = false
         const t = e.touches[0]
         touchStartPos.current = { x: t.clientX, y: t.clientY }
+        // Start long-press timer
         lp.current = window.setTimeout(() => {
           wasLp.current = true
           onLongPress(cell.row, cell.col)
@@ -83,16 +91,25 @@ export const CellComponent = memo(function CellComponent({
       }, [cell.row, cell.col, onLongPress])}
       onTouchEnd={useCallback((e: React.TouchEvent) => {
         clearTimeout(lp.current)
-        if (wasLp.current) {
-          e.preventDefault()
-        }
-      }, [])}
+        touchHandled.current = true // Block the synthesized click
+        e.preventDefault()          // Extra safety: prevent click synthesis
+        // If user was scrolling, do nothing
+        if (touchMoved.current) return
+        // Long press already handled the flag — just clean up
+        if (wasLp.current) { wasLp.current = false; return }
+        // Short tap — reveal cell (or flag if in flag mode)
+        if (flagMode && !cell.isRevealed) onRightClick(cell.row, cell.col)
+        else onClick(cell.row, cell.col)
+      }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
       onTouchMove={useCallback((e: React.TouchEvent) => {
         if (!e.touches.length) { clearTimeout(lp.current); return }
         const t = e.touches[0]
         const dx = t.clientX - touchStartPos.current.x
         const dy = t.clientY - touchStartPos.current.y
-        if (Math.abs(dx) > 15 || Math.abs(dy) > 15) clearTimeout(lp.current)
+        if (Math.abs(dx) > 15 || Math.abs(dy) > 15) {
+          clearTimeout(lp.current)
+          touchMoved.current = true
+        }
       }, [])}
       disabled={gameOver}
     >
