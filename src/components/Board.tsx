@@ -1,0 +1,46 @@
+import { useMemo, useRef, useCallback } from 'react'
+import type { Cell } from '../types'
+import { CellComponent } from './CellComponent'
+
+interface Props {
+  board: Cell[][]; xrayCells: [number, number][]; flagMode: boolean
+  onCellClick: (r: number, c: number) => void
+  onCellRightClick: (r: number, c: number) => void
+  onCellLongPress: (r: number, c: number) => void
+  gameOver: boolean; shieldActive: boolean; cellSize: number
+  shakeOffset: { x: number; y: number }
+}
+
+export function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClick, onCellLongPress, gameOver, shieldActive, cellSize, shakeOffset }: Props) {
+  const ref = useRef<HTMLDivElement>(null)
+  const xset = useMemo(() => new Set(xrayCells.map(([r,c]) => `${r},${c}`)), [xrayCells])
+  const click = useCallback((r:number,c:number) => onCellClick(r,c), [onCellClick])
+
+  return (
+    <div
+      ref={ref}
+      className="inline-block rounded-xl"
+      style={{
+        padding: 6,
+        background: 'rgba(255,255,255,.025)',
+        border: '1px solid rgba(255,255,255,.05)',
+        transform: `translate(${shakeOffset.x}px,${shakeOffset.y}px)`,
+      }}
+    >
+      <div className="grid" style={{
+        gridTemplateColumns: `repeat(${board[0]?.length || 0},${cellSize}px)`,
+        gridTemplateRows: `repeat(${board.length},${cellSize}px)`,
+        gap: 2,
+      }}>
+        {board.flat().map(cell => (
+          <CellComponent
+            key={`${cell.row}-${cell.col}`}
+            cell={cell} cellSize={cellSize} isXray={xset.has(`${cell.row},${cell.col}`)}
+            flagMode={flagMode} onClick={click} onRightClick={onCellRightClick}
+            onLongPress={onCellLongPress} gameOver={gameOver} shieldActive={shieldActive}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
