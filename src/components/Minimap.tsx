@@ -64,7 +64,7 @@ export function Minimap({ board, scrollContainer }: Props) {
   if (!vp.show) return null
 
   return (
-    <div className="flex-shrink-0 px-3 py-1.5 sm:hidden">
+    <div className="flex-shrink-0 px-3 py-1.5">
       <div
         ref={ref}
         className="relative mx-auto rounded-lg border border-white/10 bg-black/30 overflow-hidden"

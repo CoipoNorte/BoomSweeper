@@ -22,7 +22,6 @@ function App() {
   const [flagMode, setFlagMode] = useState(false)
   const [win, setWin] = useState({ w: innerWidth, h: innerHeight })
   const boardRef = useRef<HTMLDivElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Track resize
   useEffect(() => {
@@ -42,24 +41,24 @@ function App() {
   const cellSize = useMemo(() => {
     if (screen !== 'game') return 30
     const cfg = DIFFICULTY_CONFIGS[state.difficulty]
+    const gap = 2
 
     if (mobile) {
       // Mobile: fixed size for zoom/scroll + minimap
-      return 32
+      return 28
     }
 
-    // Desktop: fit to viewport
+    // Desktop: try to fit, but allow scroll if needed (min 24px for usability)
     const px = 24
-    const hdr = 125
+    const hdr = 80
     const bp = 6
-    const gap = 2
 
     const availW = win.w - px * 2 - bp * 2 - gap * (cfg.cols - 1)
     const availH = win.h - hdr - px - bp * 2 - gap * (cfg.rows - 1)
 
     const cw = Math.floor(availW / cfg.cols)
     const ch = Math.floor(availH / cfg.rows)
-    return Math.max(Math.min(cw, ch, 48), 14)
+    return Math.max(Math.min(cw, ch, 48), 24)
   }, [state.difficulty, screen, win, mobile])
 
   // ── Keyboard ──
@@ -126,21 +125,18 @@ function App() {
         />
       </div>
 
-      {/* BOARD — fills remaining space */}
+      {/* BOARD — fills remaining space, left-aligned when overflowing */}
       <div
-        ref={mobile ? scrollRef : boardRef}
-        className={`flex-1 px-3 pb-3 sm:px-6 transition-all duration-300 ${
-          mobile
-            ? 'overflow-auto'
-            : 'flex flex-col items-center justify-center overflow-hidden'
-        } ${state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''}`}
-        style={mobile ? { WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', alignItems: 'center' } as React.CSSProperties : undefined}
+        ref={boardRef}
+        className={`flex-1 px-3 pb-3 sm:px-6 transition-all duration-300 overflow-auto ${
+          state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''
+        }`}
+        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
         {state.gameStatus === 'idle' && (
           <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
         )}
         <Board
-          ref={mobile ? boardRef : undefined}
           board={state.board} xrayCells={effect.cells} flagMode={flagMode}
           effectType={effect.active ? effect.type : null}
           onCellClick={onCell} onCellRightClick={onFlag} onCellLongPress={onLong}
@@ -149,8 +145,8 @@ function App() {
         />
       </div>
 
-      {/* MINIMAP — mobile only, shows when board overflows */}
-      {mobile && <Minimap board={state.board} scrollContainer={scrollRef} />}
+      {/* MINIMAP — shows when board overflows on any screen */}
+      <Minimap board={state.board} scrollContainer={boardRef} />
 
       {/* POWER BAR — mobile inventory */}
       {mobile && (
