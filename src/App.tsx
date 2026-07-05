@@ -128,7 +128,7 @@ function App() {
             ? 'overflow-auto'
             : 'flex flex-col items-center justify-center overflow-hidden'
         } ${state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''}`}
-        style={mobile ? { WebkitOverflowScrolling: 'touch', textAlign: 'center' } as React.CSSProperties : undefined}
+        style={mobile ? { WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', alignItems: 'center' } as React.CSSProperties : undefined}
       >
         {state.gameStatus === 'idle' && (
           <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
