@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import { SPECIAL_INFO } from '../constants'
 
+const TOAST_INFO: Record<string, { emoji: string; label: string; color: string; description: string }> = {
+  ...SPECIAL_INFO,
+  defuse: { emoji: '💚', label: 'Desactivado', color: '#4ade80', description: '¡Mina neutralizada!' },
+  detector: { emoji: '🔍', label: 'Detector', color: '#fbbf24', description: '¡Minas visibles por 4s!' },
+  sonar: { emoji: '📡', label: 'Sonar', color: '#38bdf8', description: '¡Fila + columna escaneadas!' },
+  xray: { emoji: '🔬', label: 'Rayos X', color: '#c084fc', description: '¡Zona de 5×5 escaneada!' },
+  lucky: { emoji: '🍀', label: 'Suerte', color: '#86efac', description: '¡Próxima casilla segura!' },
+  shield_save: { emoji: '🛡️', label: 'Escudo', color: '#a78bfa', description: '¡Escudo activado, salvado!' },
+  explosion: { emoji: '💥', label: 'Explosión', color: '#ef4444', description: '¡Minas alrededor!' },
+}
+
 export function SpecialToast({ specialType, onDone }: { specialType: string; onDone: () => void }) {
   const [on, setOn] = useState(false)
   useEffect(() => {
@@ -10,7 +21,7 @@ export function SpecialToast({ specialType, onDone }: { specialType: string; onD
     return () => { clearTimeout(a); clearTimeout(b); clearTimeout(c) }
   }, [onDone])
 
-  const info = SPECIAL_INFO[specialType]
+  const info = TOAST_INFO[specialType]
   if (!info) return null
 
   return (

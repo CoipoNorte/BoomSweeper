@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import type { Difficulty } from './types'
-import { DIFFICULTY_CONFIGS } from './constants'
+import type { Difficulty, SpecialType } from './types'
+import { DIFFICULTY_CONFIGS, SPECIAL_INFO } from './constants'
 import { useGame } from './hooks/useGame'
 import { useParticles } from './hooks/useParticles'
 import { useScreenShake } from './hooks/useScreenShake'
@@ -14,6 +14,7 @@ import { ParticleLayer } from './components/ParticleLayer'
 import { SpecialToast } from './components/SpecialToast'
 import { ScorePopups, useScorePopups } from './components/ScorePopup'
 import { Minimap } from './components/Minimap'
+import { PowerBar } from './components/PowerBar'
 
 function App() {
   const [screen, setScreen] = useState<'menu' | 'game'>('menu')
@@ -30,7 +31,7 @@ function App() {
     addEventListener('resize', fn); return () => { removeEventListener('resize', fn); clearTimeout(t) }
   }, [])
 
-  const { state, xray, revealedCount, totalSafeCells, actions } = useGame()
+  const { state, effect, revealedCount, totalSafeCells, luckyActive, defuseArmed, actions } = useGame()
   const { particles, spawnExplosion, spawnSuccess, spawnSpecial, spawnWin } = useParticles()
   const { offset, shake } = useScreenShake()
   const snd = useSound()
@@ -89,8 +90,13 @@ function App() {
     if (res.special === 'explosion') { spawnExplosion(p.x, p.y); shake(14, 400); snd.playExplosion(); return }
     if (res.special === 'win') { spawnWin(p.x, p.y); setTimeout(() => spawnWin(win.w/2, win.h/2), 200); snd.playWin(); return }
     if (res.special === 'shield_save') { spawnSpecial(p.x, p.y, '🛡️'); shake(5, 200); snd.playSpecial(); setToast('shield'); return }
+    if (res.special === 'defuse') { spawnSpecial(p.x, p.y, '💚'); shake(3, 150); snd.playSpecial(); setToast('defuse'); return }
+    if (res.special === 'detector') { spawnSpecial(p.x, p.y, '🔍'); snd.playSpecial(); setToast('detector'); return }
+    if (res.special === 'sonar') { spawnSpecial(p.x, p.y, '📡'); snd.playSpecial(); setToast('sonar'); return }
+    if (res.special === 'xray') { spawnSpecial(p.x, p.y, '🔬'); snd.playSpecial(); setToast('xray'); return }
+    if (res.special === 'lucky') { spawnSpecial(p.x, p.y, '🍀'); snd.playSpecial(); setToast('lucky'); return }
     if (res.special && res.special !== 'none') {
-      const em: Record<string,string> = { shield:'🛡️', reveal:'👁️', freeze:'❄️', xray:'🔍', lucky:'🍀', double:'⚡' }
+      const em: Record<string,string> = { shield:'🛡️', freeze:'❄️', double:'⚡' }
       spawnSpecial(p.x, p.y, em[res.special]||'✨'); snd.playSpecial(); setToast(res.special)
       addFloat(p.x, p.y-10, res.special==='double'?20:10, true)
     } else { spawnSuccess(p.x, p.y); snd.playReveal(); addFloat(p.x, p.y-10, 10) }
@@ -135,14 +141,57 @@ function App() {
         )}
         <Board
           ref={mobile ? boardRef : undefined}
-          board={state.board} xrayCells={xray.cells} flagMode={flagMode}
+          board={state.board} xrayCells={effect.cells} flagMode={flagMode}
+          effectType={effect.active ? effect.type : null}
           onCellClick={onCell} onCellRightClick={onFlag} onCellLongPress={onLong}
           gameOver={over} shieldActive={state.shieldActive} cellSize={cellSize} shakeOffset={offset}
+          defuseArmed={defuseArmed} luckyActive={luckyActive}
         />
       </div>
 
       {/* MINIMAP — mobile only, shows when board overflows */}
       {mobile && <Minimap board={state.board} scrollContainer={scrollRef} />}
+
+      {/* POWER BAR — mobile inventory */}
+      {mobile && (
+        <PowerBar
+          inventory={state.inventory}
+          activePower={state.activePower}
+          onActivate={actions.activatePower}
+          onCancel={actions.cancelPower}
+        />
+      )}
+
+      {/* DESKTOP POWER BAR */}
+      {!mobile && (state.inventory.length > 0 || state.activePower) && (
+        <div className="flex-shrink-0 px-3 py-2 sm:px-6 flex items-center justify-center gap-2">
+          <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider mr-2">Poder:</span>
+          {(() => {
+            const counts = new Map<string, number>()
+            for (const p of state.inventory) counts.set(p, (counts.get(p) || 0) + 1)
+            return Array.from(counts.keys()).map(power => {
+              const info = SPECIAL_INFO[power]
+              if (!info) return null
+              const count = counts.get(power) || 1
+              return (
+                <button
+                  key={power}
+                  onClick={() => actions.activatePower(power as SpecialType)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                  style={{ background: `${info.color}15`, border: `1px solid ${info.color}30`, color: info.color }}
+                >
+                  <span>{info.emoji}</span>
+                  <span>{info.label}</span>
+                  {count > 1 && <span className="text-[9px] opacity-60">×{count}</span>}
+                </button>
+              )
+            })
+          })()}
+          {state.activePower && (
+            <button onClick={actions.cancelPower} className="text-xs text-white/40 ml-2">✕</button>
+          )}
+        </div>
+      )}
 
       {/* MODALS */}
       {state.gameStatus === 'paused' && <PauseModal onResume={actions.resumeGame} onRestart={actions.restartGame} onHome={home} />}

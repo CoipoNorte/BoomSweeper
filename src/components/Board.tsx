@@ -4,14 +4,16 @@ import { CellComponent } from './CellComponent'
 
 interface Props {
   board: Cell[][]; xrayCells: [number, number][]; flagMode: boolean
+  effectType: 'detector' | 'sonar' | 'xray' | null
   onCellClick: (r: number, c: number) => void
   onCellRightClick: (r: number, c: number) => void
   onCellLongPress: (r: number, c: number) => void
   gameOver: boolean; shieldActive: boolean; cellSize: number
   shakeOffset: { x: number; y: number }
+  defuseArmed: boolean; luckyActive: boolean
 }
 
-export const Board = forwardRef<HTMLDivElement, Props>(function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClick, onCellLongPress, gameOver, shieldActive, cellSize, shakeOffset }: Props, forwardedRef) {
+export const Board = forwardRef<HTMLDivElement, Props>(function Board({ board, xrayCells, flagMode, effectType, onCellClick, onCellRightClick, onCellLongPress, gameOver, shieldActive, cellSize, shakeOffset, defuseArmed, luckyActive }: Props, forwardedRef) {
   const localRef = useRef<HTMLDivElement>(null)
   const ref = forwardedRef || localRef
   const xset = useMemo(() => new Set(xrayCells.map(([r,c]) => `${r},${c}`)), [xrayCells])
@@ -39,8 +41,10 @@ export const Board = forwardRef<HTMLDivElement, Props>(function Board({ board, x
           <CellComponent
             key={`${cell.row}-${cell.col}`}
             cell={cell} cellSize={cellSize} isXray={xset.has(`${cell.row},${cell.col}`)}
+            effectType={effectType}
             flagMode={flagMode} onClick={click} onRightClick={onCellRightClick}
             onLongPress={onCellLongPress} gameOver={gameOver} shieldActive={shieldActive}
+            defuseArmed={defuseArmed} luckyActive={luckyActive}
           />
         ))}
       </div>

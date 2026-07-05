@@ -1,11 +1,13 @@
 export type SpecialType =
   | 'none'
-  | 'shield'    // Protects from one mine click
-  | 'reveal'    // Reveals a 3x3 area safely
-  | 'freeze'    // Freezes timer for 10 seconds
-  | 'xray'      // Shows mines in adjacent cells briefly
-  | 'lucky'     // Guaranteed safe - never a mine
-  | 'double'    // Double points for this reveal
+  | 'shield'     // [Passive] Survives one mine click
+  | 'detector'   // [Active] Shows mines in 5×3 horizontal area for 4s
+  | 'sonar'      // [Active] Reveals entire row + column for 4s
+  | 'defuse'     // [Active] Safely neutralize a mine you clicked
+  | 'freeze'     // [Passive] Freezes timer for 10 seconds
+  | 'xray'       // [Active] Shows mines in 5×5 area for 3s
+  | 'lucky'      // [Active] Next reveal guaranteed safe
+  | 'double'     // [Passive] ×2 points for this reveal
 
 export interface Cell {
   row: number
@@ -40,6 +42,8 @@ export interface GameState {
   freezeTimeLeft: number
   difficulty: Difficulty
   firstClick: boolean
+  inventory: SpecialType[]
+  activePower: SpecialType | null
 }
 
 export interface HighScore {

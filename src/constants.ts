@@ -27,42 +27,62 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
   },
 }
 
-export const SPECIAL_INFO: Record<string, { emoji: string; label: string; color: string; description: string }> = {
+export const SPECIAL_INFO: Record<string, { emoji: string; label: string; color: string; description: string; type: 'passive' | 'active' }> = {
   shield: {
     emoji: '🛡️',
     label: 'Escudo',
     color: '#a78bfa',
     description: '¡Sobrevives a una mina!',
+    type: 'passive',
   },
-  reveal: {
-    emoji: '👁️',
-    label: 'Visión',
-    color: '#c084fc',
-    description: 'Revela un área de 3×3',
+  detector: {
+    emoji: '🔍',
+    label: 'Detector',
+    color: '#fbbf24',
+    description: 'Muestra minas en 5×3 por 4s',
+    type: 'active',
+  },
+  sonar: {
+    emoji: '📡',
+    label: 'Sonar',
+    color: '#38bdf8',
+    description: 'Revela fila + columna por 4s',
+    type: 'active',
+  },
+  defuse: {
+    emoji: '💚',
+    label: 'Desactivar',
+    color: '#4ade80',
+    description: 'Neutraliza un mina al tocar',
+    type: 'active',
   },
   freeze: {
     emoji: '❄️',
     label: 'Freeze',
     color: '#67e8f9',
     description: 'Congela el timer 10s',
+    type: 'passive',
   },
   xray: {
-    emoji: '🔍',
-    label: 'X-Ray',
-    color: '#fbbf24',
-    description: 'Muestra minas cercanas',
+    emoji: '🔬',
+    label: 'Rayos X',
+    color: '#c084fc',
+    description: 'Muestra minas en 5×5 por 3s',
+    type: 'active',
   },
   lucky: {
     emoji: '🍀',
     label: 'Suerte',
-    color: '#4ade80',
-    description: '¡Siempre es segura!',
+    color: '#86efac',
+    description: 'Próxima celda segura garantizada',
+    type: 'active',
   },
   double: {
     emoji: '⚡',
     label: 'Doble',
     color: '#fb923c',
     description: '×2 puntos en esta casilla',
+    type: 'passive',
   },
 }
 

@@ -7,8 +7,89 @@ import {
 } from './constants'
 
 function getRandomSpecial(): SpecialType {
-  const specials: SpecialType[] = ['shield', 'reveal', 'freeze', 'xray', 'lucky', 'double']
-  return specials[Math.floor(Math.random() * specials.length)]
+  // Weighted: active powers more common for fun
+  const pool: SpecialType[] = [
+    'shield', 'shield',
+    'detector', 'detector',
+    'sonar', 'sonar',
+    'defuse',
+    'freeze', 'freeze',
+    'xray',
+    'lucky',
+    'double', 'double',
+  ]
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+/** Get all cells in a horizontal 5×3 area centered on (row, col) */
+export function getDetectorArea(board: Cell[][], row: number, col: number): [number, number][] {
+  const rows = board.length
+  const cols = board[0].length
+  const cells: [number, number][] = []
+  for (let dr = -2; dr <= 2; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = row + dr
+      const nc = col + dc
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) cells.push([nr, nc])
+    }
+  }
+  return cells
+}
+
+/** Get all cells in a 5×5 area centered on (row, col) */
+export function getXrayArea(board: Cell[][], row: number, col: number): [number, number][] {
+  const rows = board.length
+  const cols = board[0].length
+  const cells: [number, number][] = []
+  for (let dr = -2; dr <= 2; dr++) {
+    for (let dc = -2; dc <= 2; dc++) {
+      const nr = row + dr
+      const nc = col + dc
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) cells.push([nr, nc])
+    }
+  }
+  return cells
+}
+
+/** Get entire row + column intersecting at (row, col) */
+export function getSonarArea(board: Cell[][], row: number, col: number): [number, number][] {
+  const rows = board.length
+  const cols = board[0].length
+  const cells: [number, number][] = []
+  for (let c = 0; c < cols; c++) cells.push([row, c])
+  for (let r = 0; r < rows; r++) {
+    if (r !== row) cells.push([r, col])
+  }
+  return cells
+}
+
+/** Remove a mine and recalculate adjacency */
+export function defuseMine(board: Cell[][], row: number, col: number): Cell[][] {
+  const rows = board.length
+  const cols = board[0].length
+  const newBoard = board.map(r => r.map(c => ({ ...c })))
+  if (!newBoard[row][col].isMine) return newBoard
+  newBoard[row][col].isMine = false
+  // Recalculate adjacency for all neighbors
+  for (let dr = -2; dr <= 2; dr++) {
+    for (let dc = -2; dc <= 2; dc++) {
+      const nr = row + dr
+      const nc = col + dc
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !newBoard[nr][nc].isMine) {
+        let count = 0
+        for (let ddr = -1; ddr <= 1; ddr++) {
+          for (let ddc = -1; ddc <= 1; ddc++) {
+            if (ddr === 0 && ddc === 0) continue
+            const nnr = nr + ddr
+            const nnc = nc + ddc
+            if (nnr >= 0 && nnr < rows && nnc >= 0 && nnc < cols && newBoard[nnr][nnc].isMine) count++
+          }
+        }
+        newBoard[nr][nc].adjacentMines = count
+      }
+    }
+  }
+  return newBoard
 }
 
 export function createBoard(difficulty: Difficulty): Cell[][] {
@@ -263,5 +344,7 @@ export function createInitialState(difficulty: Difficulty): GameState {
     freezeTimeLeft: 0,
     difficulty,
     firstClick: true,
+    inventory: [],
+    activePower: null,
   }
 }

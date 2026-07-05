@@ -3,7 +3,8 @@ import type { Cell } from '../types'
 import { SPECIAL_INFO, NUMBER_COLORS } from '../constants'
 
 interface Props {
-  cell: Cell; cellSize: number; isXray: boolean; flagMode: boolean
+  cell: Cell; cellSize: number; isXray: boolean; effectType: 'detector' | 'sonar' | 'xray' | null
+  flagMode: boolean; defuseArmed: boolean; luckyActive: boolean
   onClick: (r: number, c: number) => void
   onRightClick: (r: number, c: number) => void
   onLongPress: (r: number, c: number) => void
@@ -11,12 +12,12 @@ interface Props {
 }
 
 export const CellComponent = memo(function CellComponent({
-  cell, cellSize, isXray, flagMode, onClick, onRightClick, onLongPress, gameOver, shieldActive,
+  cell, cellSize, isXray, effectType, flagMode, defuseArmed, luckyActive,
+  onClick, onRightClick, onLongPress, gameOver, shieldActive,
 }: Props) {
   const lp = useRef(0)
   const wasLp = useRef(false)
   const touchMoved = useRef(false)
-  // Timestamp of last touchEnd — used to block the synthesized click on mobile
   const lastTouchEnd = useRef(0)
   const touchStartPos = useRef({ x: 0, y: 0 })
 
@@ -53,15 +54,37 @@ export const CellComponent = memo(function CellComponent({
     bg = 'bg-orange-500/10 border-orange-400/20'
     content = '🚩'
   } else if (isXray) {
-    bg = 'bg-amber-500/10 border-amber-400/20'
+    // Cells highlighted by detector/sonar/xray effects
+    const effectColor = effectType === 'sonar' ? 'bg-sky-500/20 border-sky-400/30'
+      : effectType === 'detector' ? 'bg-amber-500/20 border-amber-400/30'
+      : 'bg-purple-500/20 border-purple-400/30'
+    bg = effectColor
     content = '💣'
     anim = 'xray-blink .5s ease-in-out infinite'
   } else {
     bg = shieldActive
       ? 'bg-violet-500/10 border-violet-400/15 hover:bg-violet-500/20'
       : 'bg-white/[.05] border-white/[.07] hover:bg-violet-500/10'
+
+    // DefuseArmed: cells near mines glow green
+    if (defuseArmed && !cell.isRevealed) {
+      bg = 'bg-emerald-500/15 border-emerald-400/25 hover:bg-emerald-500/25'
+      anim = 'power-pulse 1.5s ease-in-out infinite'
+    }
+
+    // LuckyActive: next cell guaranteed safe
+    if (luckyActive && !cell.isRevealed) {
+      bg = 'bg-lime-500/15 border-lime-400/25 hover:bg-lime-500/25'
+      anim = 'power-pulse 1.5s ease-in-out infinite'
+    }
+
     if (sp && !gameOver) bg += ' cell-shimmer'
   }
+
+  // Active power indicator overlay
+  const showPowerBorder = !cell.isRevealed && !gameOver && (
+    (defuseArmed && !cell.isFlagged) || (luckyActive && !cell.isFlagged)
+  )
 
   return (
     <button
@@ -88,14 +111,11 @@ export const CellComponent = memo(function CellComponent({
           navigator.vibrate?.(20)
         }, 400)
       }, [cell.row, cell.col, onLongPress])}
-      onTouchEnd={useCallback((_e: React.TouchEvent) => {
+      onTouchEnd={useCallback(() => {
         clearTimeout(lp.current)
         lastTouchEnd.current = Date.now()
-        // If user was scrolling, do nothing
         if (touchMoved.current) return
-        // Long press already handled the flag — clean up
         if (wasLp.current) { wasLp.current = false; return }
-        // Short tap — reveal cell (or flag if in flag mode)
         if (flagMode && !cell.isRevealed) onRightClick(cell.row, cell.col)
         else onClick(cell.row, cell.col)
       }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
@@ -114,6 +134,15 @@ export const CellComponent = memo(function CellComponent({
       {typeof content === 'string' ? <span style={{ fontSize: fs }}>{content}</span> : content}
       {cell.isRevealed && !cell.isMine && (
         <div className="absolute inset-0 rounded bg-white/10 pointer-events-none" style={{ animation: 'cell-flash .3s ease-out forwards' }} />
+      )}
+      {/* Power active indicator ring */}
+      {showPowerBorder && (
+        <div className="absolute inset-[-2px] rounded border-2 pointer-events-none"
+          style={{
+            borderColor: defuseArmed ? '#4ade80' : '#a3e635',
+            animation: 'power-ring-pulse 1.5s ease-in-out infinite',
+          }}
+        />
       )}
     </button>
   )

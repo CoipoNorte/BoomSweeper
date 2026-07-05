@@ -53,6 +53,16 @@ html, body {
   50% { opacity: 1; }
 }
 
+@keyframes power-pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+@keyframes power-ring-pulse {
+  0%,100% { opacity: .5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
 @keyframes float-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
