@@ -1,4 +1,4 @@
-# 💣 BoomSweeper
+# 💣 [BoomSweeper](https://coiponorte.github.io/BoomSweeper/)
 
 Buscaminas con poderes especiales para la generación Z. Construido con React + Vite + Tailwind CSS.
 
