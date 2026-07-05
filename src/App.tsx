@@ -125,24 +125,34 @@ function App() {
         />
       </div>
 
-      {/* BOARD — fills remaining space, left-aligned when overflowing */}
+      {/* BOARD — centered when fits, scrollable when overflows */}
       <div
         ref={boardRef}
-        className={`flex-1 px-3 pb-3 sm:px-6 transition-all duration-300 overflow-auto ${
+        className={`flex-1 overflow-auto transition-all duration-300 ${
           state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''
         }`}
-        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        style={{ WebkitOverflowScrolling: 'touch', padding: 12 } as React.CSSProperties}
       >
-        {state.gameStatus === 'idle' && (
-          <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
-        )}
-        <Board
-          board={state.board} xrayCells={effect.cells} flagMode={flagMode}
-          effectType={effect.active ? effect.type : null}
-          onCellClick={onCell} onCellRightClick={onFlag} onCellLongPress={onLong}
-          gameOver={over} shieldActive={state.shieldActive} cellSize={cellSize} shakeOffset={offset}
-          defuseArmed={defuseArmed} luckyActive={luckyActive}
-        />
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 'max-content',
+          minWidth: '100%',
+          minHeight: '100%',
+        }}>
+          {state.gameStatus === 'idle' && (
+            <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
+          )}
+          <Board
+            board={state.board} xrayCells={effect.cells} flagMode={flagMode}
+            effectType={effect.active ? effect.type : null}
+            onCellClick={onCell} onCellRightClick={onFlag} onCellLongPress={onLong}
+            gameOver={over} shieldActive={state.shieldActive} cellSize={cellSize} shakeOffset={offset}
+            defuseArmed={defuseArmed} luckyActive={luckyActive}
+          />
+        </div>
       </div>
 
       {/* MINIMAP — shows when board overflows on any screen */}
