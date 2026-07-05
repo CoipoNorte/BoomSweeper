@@ -119,6 +119,7 @@ function App() {
       <div
         ref={boardRef}
         className={`flex-1 flex flex-col items-center justify-center px-3 pb-3 sm:px-6 overflow-hidden transition-all duration-300 ${state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''}`}
+        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
         {state.gameStatus === 'idle' && (
           <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>

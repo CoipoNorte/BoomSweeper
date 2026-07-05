@@ -15,6 +15,7 @@ export const CellComponent = memo(function CellComponent({
 }: Props) {
   const lp = useRef(0)
   const wasLp = useRef(false)
+  const touchStartPos = useRef({ x: 0, y: 0 })
 
   const fs = Math.max(9, cellSize * 0.45)
   const sp = cell.special !== 'none' ? SPECIAL_INFO[cell.special] : null
@@ -70,12 +71,24 @@ export const CellComponent = memo(function CellComponent({
         else onClick(cell.row, cell.col)
       }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
       onContextMenu={useCallback((e: React.MouseEvent) => { e.preventDefault(); onRightClick(cell.row, cell.col) }, [cell.row, cell.col, onRightClick])}
-      onTouchStart={useCallback(() => {
+      onTouchStart={useCallback((e: React.TouchEvent) => {
         wasLp.current = false
-        lp.current = window.setTimeout(() => { wasLp.current = true; onLongPress(cell.row, cell.col); navigator.vibrate?.(20) }, 400)
+        const t = e.touches[0]
+        touchStartPos.current = { x: t.clientX, y: t.clientY }
+        lp.current = window.setTimeout(() => {
+          wasLp.current = true
+          onLongPress(cell.row, cell.col)
+          navigator.vibrate?.(20)
+        }, 400)
       }, [cell.row, cell.col, onLongPress])}
       onTouchEnd={useCallback(() => clearTimeout(lp.current), [])}
-      onTouchMove={useCallback(() => clearTimeout(lp.current), [])}
+      onTouchMove={useCallback((e: React.TouchEvent) => {
+        if (!e.touches.length) { clearTimeout(lp.current); return }
+        const t = e.touches[0]
+        const dx = t.clientX - touchStartPos.current.x
+        const dy = t.clientY - touchStartPos.current.y
+        if (Math.abs(dx) > 15 || Math.abs(dy) > 15) clearTimeout(lp.current)
+      }, [])}
       disabled={gameOver}
     >
       {typeof content === 'string' ? <span style={{ fontSize: fs }}>{content}</span> : content}

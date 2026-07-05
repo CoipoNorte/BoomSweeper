@@ -20,11 +20,13 @@ export function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClic
     <div
       ref={ref}
       className="inline-block rounded-xl"
+      onContextMenu={useCallback((e: React.MouseEvent) => e.preventDefault(), [])}
       style={{
         padding: 6,
         background: 'rgba(255,255,255,.025)',
         border: '1px solid rgba(255,255,255,.05)',
         transform: `translate(${shakeOffset.x}px,${shakeOffset.y}px)`,
+        touchAction: 'manipulation',
       }}
     >
       <div className="grid" style={{

@@ -9,6 +9,8 @@ html, body, #root {
   color: #fff;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 /* cell shimmer for specials */
@@ -56,6 +58,9 @@ html, body, #root {
 .grid > button {
   will-change: transform;
   touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 button { touch-action: manipulation; cursor: pointer; }
