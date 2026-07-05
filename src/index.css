@@ -74,5 +74,26 @@ html, body {
 button { touch-action: manipulation; cursor: pointer; }
 button:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+
+/* Accessibility: respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cell-shimmer::after { animation: none !important; }
+}
+
+/* Ensure minimum tap target size for all buttons */
+button, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+/* Exempt grid cells — they have explicit sizes */
+.grid > button {
+  min-height: unset;
+  min-width: unset;
+}

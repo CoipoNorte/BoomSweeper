@@ -21,12 +21,12 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
           <h1 className="text-3xl sm:text-5xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent leading-tight">
             BoomSweeper
           </h1>
-          <p className="text-white/30 text-xs sm:text-sm mt-2 sm:mt-3">Buscaminas con poderes ✨</p>
+          <p className="text-white/50 text-sm sm:text-base mt-2 sm:mt-3">Buscaminas con poderes ✨</p>
         </div>
 
         {/* ── Difficulty ── */}
         <div className="rounded-2xl bg-white/[.03] border border-white/[.06] p-3 sm:p-5 mb-4 sm:mb-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-4">Dificultad</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">Dificultad</p>
           <div className="space-y-3">
             {(['easy','medium','hard'] as Difficulty[]).map(d => {
               const c = DIFFICULTY_CONFIGS[d]
@@ -41,7 +41,7 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
                   <span className="text-3xl">{c.emoji}</span>
                   <div className="flex-1">
                     <div className="font-bold">{c.label}</div>
-                    <div className="text-xs text-white/30 mt-0.5">{c.rows}×{c.cols} · 💣 {c.mines} · ✨ {c.specials}</div>
+                    <div className="text-sm text-white/50 mt-0.5">{c.rows}×{c.cols} · 💣 {c.mines} · ✨ {c.specials}</div>
                   </div>
                   {on && <span className="text-violet-400 font-bold text-xl">✓</span>}
                 </button>
@@ -54,14 +54,15 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
         <button
           onClick={() => onStart(diff)}
           className="w-full py-3.5 sm:py-4 mb-4 sm:mb-5 rounded-2xl text-base sm:text-lg font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-700/30 active:scale-[.97] transition-transform"
+          aria-label="Iniciar partida"
         >
           Jugar 🎮
         </button>
 
         {/* ── Links ── */}
         <div className="flex gap-3">
-          <button onClick={() => setModal('help')}   className="flex-1 py-3 sm:py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-xs sm:text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">📖 Cómo jugar</button>
-          <button onClick={() => { setModal('scores'); getHighScores().then(setScores) }} className="flex-1 py-3 sm:py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-xs sm:text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">🏆 Records</button>
+          <button onClick={() => setModal('help')}   className="flex-1 py-3.5 sm:py-4 rounded-xl bg-white/[.06] border border-white/[.10] text-sm sm:text-base font-semibold text-white/60 active:scale-[.97] transition-transform">📖 Cómo jugar</button>
+          <button onClick={() => { setModal('scores'); getHighScores().then(setScores) }} className="flex-1 py-3.5 sm:py-4 rounded-xl bg-white/[.06] border border-white/[.10] text-sm sm:text-base font-semibold text-white/60 active:scale-[.97] transition-transform">🏆 Records</button>
         </div>
       </div>
 
@@ -79,31 +80,31 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
             <div className="flex gap-3 mt-2">
               <div className="flex-1 rounded-xl bg-white/[.03] p-3 text-center">
                 <div className="text-lg mb-1">📱</div>
-                <p className="text-[11px] text-white/40"><b className="text-white/60">Tap</b> = Revelar</p>
-                <p className="text-[11px] text-white/40"><b className="text-white/60">Mantener</b> = 🚩</p>
+                <p className="text-xs text-white/50"><b className="text-white/70">Tap</b> = Revelar</p>
+                <p className="text-xs text-white/50"><b className="text-white/70">Mantener</b> = 🚩</p>
               </div>
               <div className="flex-1 rounded-xl bg-white/[.03] p-3 text-center">
                 <div className="text-lg mb-1">🖥️</div>
-                <p className="text-[11px] text-white/40"><b className="text-white/60">Click</b> = Revelar</p>
-                <p className="text-[11px] text-white/40"><b className="text-white/60">Clic der.</b> = 🚩</p>
+                <p className="text-xs text-white/50"><b className="text-white/70">Click</b> = Revelar</p>
+                <p className="text-xs text-white/50"><b className="text-white/70">Clic der.</b> = 🚩</p>
               </div>
             </div>
           </Section>
 
           <Section title="✨ Poderes especiales" color="text-amber-300">
-            <p className="text-xs text-white/25 mb-2">Algunas casillas brillan. Al revelarlas obtienes:</p>
+            <p className="text-sm text-white/40 mb-2">Algunas casillas brillan. Al revelarlas obtienes:</p>
             <div className="space-y-1.5">
               {Object.entries(SPECIAL_INFO).map(([k,v]) => (
                 <div key={k} className="flex items-center gap-3 rounded-lg px-3 py-2" style={{ background: v.color + '0a' }}>
                   <span className="text-lg">{v.emoji}</span>
-                  <span className="text-xs"><b style={{color:v.color}}>{v.label}</b> — <span className="text-white/35">{v.description}</span></span>
+                  <span className="text-sm"><b style={{color:v.color}}>{v.label}</b> — <span className="text-white/50">{v.description}</span></span>
                 </div>
               ))}
             </div>
           </Section>
 
           <Section title="💰 Puntos" color="text-green-300">
-            <ul className="text-xs text-white/35 space-y-1 list-disc list-inside">
+            <ul className="text-sm text-white/50 space-y-1.5 list-disc list-inside">
               <li>+10 pts por casilla revelada</li>
               <li>Combos al revelar muchas de golpe</li>
               <li>Bonus por velocidad al ganar</li>

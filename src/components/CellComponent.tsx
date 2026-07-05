@@ -20,7 +20,7 @@ export const CellComponent = memo(function CellComponent({
   const lastTouchEnd = useRef(0)
   const touchStartPos = useRef({ x: 0, y: 0 })
 
-  const fs = Math.max(9, cellSize * 0.45)
+  const fs = Math.max(12, cellSize * 0.45)
   const sp = cell.special !== 'none' ? SPECIAL_INFO[cell.special] : null
 
   // Determine visuals
@@ -65,6 +65,7 @@ export const CellComponent = memo(function CellComponent({
 
   return (
     <button
+      aria-label={cell.isRevealed ? (cell.isMine ? 'Mina' : cell.adjacentMines > 0 ? `${cell.adjacentMines} minas alrededor` : 'Vacía') : cell.isFlagged ? 'Casilla con bandera' : 'Casilla oculta'}
       className={`relative flex items-center justify-center border rounded select-none transition-colors duration-75 ${bg} ${!cell.isRevealed && !gameOver ? 'active:scale-[.85]' : ''}`}
       style={{ width: cellSize, height: cellSize, fontSize: fs, animation: anim || undefined }}
       onClick={useCallback((e: React.MouseEvent) => {

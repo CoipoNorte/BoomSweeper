@@ -29,7 +29,7 @@ export function GameOverModal({ state, onRestart, onHome }: { state: GameState; 
         <div className="text-center mb-5">
           <div className="text-5xl mb-2">{win ? '🎉' : '💥'}</div>
           <h2 className={`text-3xl font-black ${win?'text-green-400':'text-red-400'}`}>{win?'¡Victoria!':'¡Boom!'}</h2>
-          <p className="text-xs text-white/20 mt-1">{win ? 'Todas las minas desactivadas 🏆' : 'Pisaste una mina 💪'}</p>
+          <p className="text-sm text-white/40 mt-1">{win ? 'Todas las minas desactivadas 🏆' : 'Pisaste una mina 💪'}</p>
         </div>
 
         {/* Stats */}
@@ -50,9 +50,9 @@ export function GameOverModal({ state, onRestart, onHome }: { state: GameState; 
                 type="text" placeholder="Tu nombre…" value={name}
                 onChange={e => setName(e.target.value)} onKeyDown={e => e.key==='Enter' && save()}
                 maxLength={15} autoFocus
-                className="flex-1 px-3 py-2.5 rounded-xl bg-white/[.05] border border-white/[.06] text-sm placeholder-white/15 focus:outline-none focus:border-violet-400/40"
+                className="flex-1 px-3 py-3 rounded-xl bg-white/[.06] border border-white/[.10] text-base placeholder-white/30 focus:outline-none focus:border-violet-400/40 min-h-[44px]"
               />
-              <button onClick={save} disabled={!name.trim()} className="px-4 py-2.5 rounded-xl bg-violet-600 font-bold text-sm disabled:opacity-20 active:scale-95 transition-all">💾</button>
+              <button onClick={save} disabled={!name.trim()} aria-label="Guardar score" className="px-5 py-3 rounded-xl bg-violet-600 font-bold text-base disabled:opacity-20 active:scale-95 transition-all min-h-[44px]">💾</button>
             </div>
           </div>
         )}
@@ -62,7 +62,7 @@ export function GameOverModal({ state, onRestart, onHome }: { state: GameState; 
         {top.length > 0 && (
           <div className="mb-5 space-y-1 max-h-28 overflow-y-auto">
             {top.slice(0,5).map((s,i) => (
-              <div key={i} className="flex justify-between text-xs px-2 py-1.5 rounded-lg bg-white/[.02]">
+              <div key={i} className="flex justify-between text-sm px-2.5 py-2 rounded-lg bg-white/[.03]">
                 <span>{i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`} {s.name}</span>
                 <span className="text-amber-400 font-bold">{s.score.toLocaleString()}</span>
               </div>
@@ -74,10 +74,10 @@ export function GameOverModal({ state, onRestart, onHome }: { state: GameState; 
 
         {/* Actions */}
         <div className="flex gap-2">
-          <button onClick={onRestart} className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 active:scale-[.97] transition-transform">🔄 Otra vez</button>
-          <button onClick={onHome} className="w-14 rounded-xl bg-white/[.04] border border-white/[.06] flex items-center justify-center text-lg active:scale-90 transition-transform">🏠</button>
+          <button onClick={onRestart} className="flex-1 py-4 rounded-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 active:scale-[.97] transition-transform text-base min-h-[44px]">🔄 Otra vez</button>
+          <button onClick={onHome} aria-label="Volver al menú" className="w-14 rounded-xl bg-white/[.06] border border-white/[.10] flex items-center justify-center text-xl active:scale-90 transition-transform min-h-[44px]">🏠</button>
         </div>
-        <p className="text-center text-[10px] text-white/10 mt-3"><kbd className="px-1 py-0.5 rounded bg-white/[.04] font-mono text-[9px]">R</kbd> reiniciar</p>
+        <p className="text-center text-xs text-white/20 mt-3"><kbd className="px-1.5 py-0.5 rounded bg-white/[.06] font-mono text-xs">R</kbd> reiniciar</p>
       </div>
     </div>
   )
@@ -85,9 +85,9 @@ export function GameOverModal({ state, onRestart, onHome }: { state: GameState; 
 
 function MiniStat({ label, val, cls, big }: { label: string; val: string; cls?: string; big?: boolean }) {
   return (
-    <div className="rounded-xl bg-white/[.03] border border-white/[.05] py-2.5 text-center">
-      <div className="text-[9px] uppercase tracking-widest text-white/20 mb-0.5">{label}</div>
-      <div className={`font-extrabold tabular-nums ${big?'text-xl':'text-sm'} ${cls||'text-white/80'}`}>{val}</div>
+    <div className="rounded-xl bg-white/[.04] border border-white/[.08] py-3 text-center">
+      <div className="text-xs uppercase tracking-wider text-white/40 mb-0.5 font-semibold">{label}</div>
+      <div className={`font-extrabold tabular-nums ${big?'text-2xl':'text-base'} ${cls||'text-white/90'}`}>{val}</div>
     </div>
   )
 }

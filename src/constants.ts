@@ -67,14 +67,14 @@ export const SPECIAL_INFO: Record<string, { emoji: string; label: string; color:
 }
 
 export const NUMBER_COLORS: Record<number, string> = {
-  1: '#818cf8',
-  2: '#34d399',
-  3: '#f87171',
-  4: '#a78bfa',
-  5: '#f97316',
-  6: '#22d3ee',
-  7: '#e2e8f0',
-  8: '#94a3b8',
+  1: '#93a5f8',
+  2: '#5eead4',
+  3: '#fca5a5',
+  4: '#c4b5fd',
+  5: '#fdba74',
+  6: '#67e8f9',
+  7: '#f1f5f9',
+  8: '#cbd5e1',
 }
 
 export const SCORE_PER_CELL = 10
