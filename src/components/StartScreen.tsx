@@ -13,19 +13,19 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
   return (
     <div className="h-full overflow-y-auto">
     <div className="min-h-full flex items-center justify-center px-6 py-10">
-      <div className="w-full" style={{ maxWidth: 380 }}>
+      <div className="w-full max-w-[380px] px-2 sm:px-0">
 
         {/* ── Logo ── */}
-        <div className="text-center mb-10">
-          <div className="text-7xl mb-4" style={{ animation: 'bounce-logo 2.5s ease-in-out infinite' }}>💣</div>
-          <h1 className="text-5xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent leading-tight">
+        <div className="text-center mb-6 sm:mb-10">
+          <div className="text-5xl sm:text-7xl mb-3 sm:mb-4" style={{ animation: 'bounce-logo 2.5s ease-in-out infinite' }}>💣</div>
+          <h1 className="text-3xl sm:text-5xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent leading-tight">
             BoomSweeper
           </h1>
-          <p className="text-white/30 text-sm mt-3">Buscaminas con poderes ✨</p>
+          <p className="text-white/30 text-xs sm:text-sm mt-2 sm:mt-3">Buscaminas con poderes ✨</p>
         </div>
 
         {/* ── Difficulty ── */}
-        <div className="rounded-2xl bg-white/[.03] border border-white/[.06] p-5 mb-5">
+        <div className="rounded-2xl bg-white/[.03] border border-white/[.06] p-3 sm:p-5 mb-4 sm:mb-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-4">Dificultad</p>
           <div className="space-y-3">
             {(['easy','medium','hard'] as Difficulty[]).map(d => {
@@ -35,7 +35,7 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
                 <button
                   key={d}
                   onClick={() => setDiff(d)}
-                  className={`w-full flex items-center gap-4 rounded-xl p-4 transition-all text-left
+                  className={`w-full flex items-center gap-3 sm:gap-4 rounded-xl p-3 sm:p-4 transition-all text-left
                     ${on ? 'bg-violet-500/15 ring-2 ring-violet-400/50' : 'bg-white/[.02] hover:bg-white/[.04]'}`}
                 >
                   <span className="text-3xl">{c.emoji}</span>
@@ -53,15 +53,15 @@ export function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {
         {/* ── Play ── */}
         <button
           onClick={() => onStart(diff)}
-          className="w-full py-4 mb-5 rounded-2xl text-lg font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-700/30 active:scale-[.97] transition-transform"
+          className="w-full py-3.5 sm:py-4 mb-4 sm:mb-5 rounded-2xl text-base sm:text-lg font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-700/30 active:scale-[.97] transition-transform"
         >
           Jugar 🎮
         </button>
 
         {/* ── Links ── */}
         <div className="flex gap-3">
-          <button onClick={() => setModal('help')}   className="flex-1 py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">📖 Cómo jugar</button>
-          <button onClick={() => { setModal('scores'); getHighScores().then(setScores) }} className="flex-1 py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">🏆 Records</button>
+          <button onClick={() => setModal('help')}   className="flex-1 py-3 sm:py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-xs sm:text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">📖 Cómo jugar</button>
+          <button onClick={() => { setModal('scores'); getHighScores().then(setScores) }} className="flex-1 py-3 sm:py-3.5 rounded-xl bg-white/[.04] border border-white/[.06] text-xs sm:text-sm font-semibold text-white/40 active:scale-[.97] transition-transform">🏆 Records</button>
         </div>
       </div>
 

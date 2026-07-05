@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback } from 'react'
+import { useMemo, useRef, useCallback, forwardRef } from 'react'
 import type { Cell } from '../types'
 import { CellComponent } from './CellComponent'
 
@@ -11,8 +11,9 @@ interface Props {
   shakeOffset: { x: number; y: number }
 }
 
-export function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClick, onCellLongPress, gameOver, shieldActive, cellSize, shakeOffset }: Props) {
-  const ref = useRef<HTMLDivElement>(null)
+export const Board = forwardRef<HTMLDivElement, Props>(function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClick, onCellLongPress, gameOver, shieldActive, cellSize, shakeOffset }: Props, forwardedRef) {
+  const localRef = useRef<HTMLDivElement>(null)
+  const ref = forwardedRef || localRef
   const xset = useMemo(() => new Set(xrayCells.map(([r,c]) => `${r},${c}`)), [xrayCells])
   const click = useCallback((r:number,c:number) => onCellClick(r,c), [onCellClick])
 
@@ -45,4 +46,4 @@ export function Board({ board, xrayCells, flagMode, onCellClick, onCellRightClic
       </div>
     </div>
   )
-}
+})

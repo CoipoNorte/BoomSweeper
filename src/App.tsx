@@ -13,6 +13,7 @@ import { PauseModal } from './components/PauseModal'
 import { ParticleLayer } from './components/ParticleLayer'
 import { SpecialToast } from './components/SpecialToast'
 import { ScorePopups, useScorePopups } from './components/ScorePopup'
+import { Minimap } from './components/Minimap'
 
 function App() {
   const [screen, setScreen] = useState<'menu' | 'game'>('menu')
@@ -20,6 +21,7 @@ function App() {
   const [flagMode, setFlagMode] = useState(false)
   const [win, setWin] = useState({ w: innerWidth, h: innerHeight })
   const boardRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Track resize
   useEffect(() => {
@@ -34,17 +36,20 @@ function App() {
   const snd = useSound()
   const { floats, addFloat } = useScorePopups()
 
-  // ── Cell size: simple math, never overflows ──
+  // ── Cell size ──
+  const mobile = win.w < 640
   const cellSize = useMemo(() => {
     if (screen !== 'game') return 30
     const cfg = DIFFICULTY_CONFIGS[state.difficulty]
-    const mobile = win.w < 640
 
-    // Page padding: 12px each side on mobile, 24 on desktop
-    const px = mobile ? 12 : 24
-    // Header height: ~110px mobile, ~120px desktop
-    const hdr = mobile ? 115 : 125
-    // Board padding: 6px each side + 2px gap between cells
+    if (mobile) {
+      // Mobile: fixed size for zoom/scroll + minimap
+      return 32
+    }
+
+    // Desktop: fit to viewport
+    const px = 24
+    const hdr = 125
     const bp = 6
     const gap = 2
 
@@ -53,8 +58,8 @@ function App() {
 
     const cw = Math.floor(availW / cfg.cols)
     const ch = Math.floor(availH / cfg.rows)
-    return Math.max(Math.min(cw, ch, mobile ? 40 : 48), 14)
-  }, [state.difficulty, screen, win])
+    return Math.max(Math.min(cw, ch, 48), 14)
+  }, [state.difficulty, screen, win, mobile])
 
   // ── Keyboard ──
   useEffect(() => {
@@ -115,21 +120,29 @@ function App() {
         />
       </div>
 
-      {/* BOARD — fills remaining space, centered */}
+      {/* BOARD — fills remaining space */}
       <div
-        ref={boardRef}
-        className={`flex-1 flex flex-col items-center justify-center px-3 pb-3 sm:px-6 overflow-hidden transition-all duration-300 ${state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''}`}
-        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        ref={mobile ? scrollRef : boardRef}
+        className={`flex-1 px-3 pb-3 sm:px-6 transition-all duration-300 ${
+          mobile
+            ? 'overflow-auto'
+            : 'flex flex-col items-center justify-center overflow-hidden'
+        } ${state.gameStatus === 'paused' ? 'blur-lg scale-95 pointer-events-none' : ''}`}
+        style={mobile ? { WebkitOverflowScrolling: 'touch' } as React.CSSProperties : undefined}
       >
         {state.gameStatus === 'idle' && (
           <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
         )}
         <Board
+          ref={mobile ? boardRef : undefined}
           board={state.board} xrayCells={xray.cells} flagMode={flagMode}
           onCellClick={onCell} onCellRightClick={onFlag} onCellLongPress={onLong}
           gameOver={over} shieldActive={state.shieldActive} cellSize={cellSize} shakeOffset={offset}
         />
       </div>
+
+      {/* MINIMAP — mobile only, shows when board overflows */}
+      {mobile && <Minimap board={state.board} scrollContainer={scrollRef} />}
 
       {/* MODALS */}
       {state.gameStatus === 'paused' && <PauseModal onResume={actions.resumeGame} onRestart={actions.restartGame} onHome={home} />}

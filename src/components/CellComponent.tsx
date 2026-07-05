@@ -85,7 +85,6 @@ export const CellComponent = memo(function CellComponent({
         clearTimeout(lp.current)
         if (wasLp.current) {
           e.preventDefault()
-          wasLp.current = false
         }
       }, [])}
       onTouchMove={useCallback((e: React.TouchEvent) => {
