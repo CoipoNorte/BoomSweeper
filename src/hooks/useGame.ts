@@ -368,6 +368,10 @@ export function useGame() {
     })
   }, [])
 
+  const handleCellLongPress = useCallback((row: number, col: number) => {
+    handleCellRightClick(row, col)
+  }, [handleCellRightClick])
+
   const startGame = useCallback((difficulty: Difficulty) => {
     setState(createInitialState(difficulty))
     setEffect({ type: 'detector', cells: [], active: false })
@@ -412,7 +416,7 @@ export function useGame() {
     actions: {
       handleCellClick,
       handleCellRightClick,
-      handleCellLongPress: handleCellRightClick,
+      handleCellLongPress,
       startGame,
       restartGame,
       pauseGame,

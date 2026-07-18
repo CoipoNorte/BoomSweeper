@@ -5,11 +5,13 @@ import { SPECIAL_INFO } from '../constants'
 interface Props {
   inventory: SpecialType[]
   activePower: SpecialType | null
+  flagMode: boolean
   onActivate: (power: SpecialType) => void
   onCancel: () => void
+  onToggleFlag: () => void
 }
 
-export const PowerBar = memo(function PowerBar({ inventory, activePower, onActivate, onCancel }: Props) {
+export const PowerBar = memo(function PowerBar({ inventory, activePower, flagMode, onActivate, onCancel, onToggleFlag }: Props) {
   // Count duplicates
   const counts = new Map<SpecialType, number>()
   for (const p of inventory) counts.set(p, (counts.get(p) || 0) + 1)
@@ -37,9 +39,18 @@ export const PowerBar = memo(function PowerBar({ inventory, activePower, onActiv
         </div>
       )}
 
-      {/* Inventory bar */}
+      {/* Mobile actions bar */}
       <div className="flex items-center gap-2 px-3 py-2.5 overflow-x-auto"
         style={{ background: 'rgba(13,13,26,.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,.08)' }}>
+        <button
+          type="button"
+          onClick={onToggleFlag}
+          aria-pressed={flagMode}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl flex-shrink-0 active:scale-95 transition-all duration-150 ${flagMode ? 'bg-orange-500/20 text-orange-300 ring-1 ring-orange-400/40' : 'bg-white/10 text-white/70'}`}
+        >
+          <span className="text-lg">🚩</span>
+          <span className="text-[11px] font-bold">{flagMode ? 'Bandera' : 'Marcar'}</span>
+        </button>
         <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider flex-shrink-0 mr-1">Poder</span>
         {unique.map((power) => {
           const info = SPECIAL_INFO[power]

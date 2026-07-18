@@ -36,12 +36,14 @@ export function GameHeader({ state, revealedCount, totalSafeCells, flagMode, onT
         {/* Right: flag mode + badge */}
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={onToggleFlag}
             aria-label={flagMode ? 'Cambiar a modo revelar' : 'Cambiar a modo bandera'}
+            aria-pressed={flagMode}
             className={`md:hidden text-sm font-bold px-3 py-2 rounded-full transition-all min-h-[44px]
               ${flagMode ? 'bg-orange-500/20 text-orange-300 ring-1 ring-orange-400/40' : 'bg-white/[.06] text-white/50'}`}
           >
-            {flagMode ? '🚩 Bandera' : '👆 Tap'}
+            {flagMode ? '🚩 Bandera' : '👆 Revelar'}
           </button>
           <span className="text-sm">{DIFFICULTY_CONFIGS[state.difficulty].emoji}</span>
         </div>

@@ -143,7 +143,22 @@ function App() {
           minHeight: '100%',
         }}>
           {state.gameStatus === 'idle' && (
-            <p className="text-white/15 text-xs mb-2 animate-pulse select-none">👆 Toca cualquier casilla</p>
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs" role="status">
+              <span className="rounded-full bg-white/[.06] px-2.5 py-1 text-white/60">👆 Toca para revelar</span>
+              <span className="rounded-full bg-white/[.06] px-2.5 py-1 text-white/60">⏱️ Mantén para marcar</span>
+            </div>
+          )}
+          {mobile && (
+            <div className="mb-3 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setFlagMode(value => !value)}
+                aria-pressed={flagMode}
+                className={`rounded-full px-4 py-2 text-sm font-semibold shadow-lg ring-1 transition-all ${flagMode ? 'bg-orange-500/20 text-orange-300 ring-orange-400/40' : 'bg-white/[.08] text-white/70 ring-white/[.10]'}`}
+              >
+                {flagMode ? '🚩 Modo bandera activo' : '🚩 Activar bandera'}
+              </button>
+            </div>
           )}
           <Board
             board={state.board} xrayCells={effect.cells} flagMode={flagMode}
@@ -163,8 +178,10 @@ function App() {
         <PowerBar
           inventory={state.inventory}
           activePower={state.activePower}
+          flagMode={flagMode}
           onActivate={actions.activatePower}
           onCancel={actions.cancelPower}
+          onToggleFlag={() => setFlagMode(value => !value)}
         />
       )}
 

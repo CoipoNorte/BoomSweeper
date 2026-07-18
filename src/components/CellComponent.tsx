@@ -15,14 +15,87 @@ export const CellComponent = memo(function CellComponent({
   cell, cellSize, isXray, effectType, flagMode, defuseArmed, luckyActive,
   onClick, onRightClick, onLongPress, gameOver, shieldActive,
 }: Props) {
-  const lp = useRef(0)
-  const wasLp = useRef(false)
-  const touchMoved = useRef(false)
-  const lastTouchEnd = useRef(0)
-  const touchStartPos = useRef({ x: 0, y: 0 })
+  const longPressTimer = useRef<number | null>(null)
+  const pointerId = useRef<number | null>(null)
+  const pointerStart = useRef({ x: 0, y: 0 })
+  const gestureMoved = useRef(false)
+  const longPressTriggered = useRef(false)
+  const suppressClick = useRef(false)
 
   const fs = Math.max(12, cellSize * 0.45)
   const sp = cell.special !== 'none' ? SPECIAL_INFO[cell.special] : null
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current !== null) {
+      window.clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
+
+  const resetGesture = useCallback(() => {
+    clearLongPress()
+    pointerId.current = null
+    gestureMoved.current = false
+    longPressTriggered.current = false
+  }, [clearLongPress])
+
+  const handleAction = useCallback(() => {
+    if (flagMode && !cell.isRevealed) {
+      onRightClick(cell.row, cell.col)
+    } else {
+      onClick(cell.row, cell.col)
+    }
+  }, [cell.isRevealed, cell.row, cell.col, flagMode, onClick, onRightClick])
+
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (gameOver || e.button === 2) return
+    e.preventDefault()
+    suppressClick.current = true
+    pointerId.current = e.pointerId
+    pointerStart.current = { x: e.clientX, y: e.clientY }
+    gestureMoved.current = false
+    longPressTriggered.current = false
+    clearLongPress()
+    longPressTimer.current = window.setTimeout(() => {
+      longPressTriggered.current = true
+      onLongPress(cell.row, cell.col)
+      navigator.vibrate?.(20)
+    }, 380)
+  }, [cell.row, cell.col, clearLongPress, gameOver, onLongPress])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (pointerId.current === null || e.pointerId !== pointerId.current) return
+    const dx = e.clientX - pointerStart.current.x
+    const dy = e.clientY - pointerStart.current.y
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+      gestureMoved.current = true
+      clearLongPress()
+    }
+  }, [clearLongPress])
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (pointerId.current !== null && e.pointerId !== pointerId.current) return
+    e.preventDefault()
+    clearLongPress()
+    if (!gestureMoved.current && !longPressTriggered.current) {
+      handleAction()
+    }
+    resetGesture()
+  }, [clearLongPress, handleAction, resetGesture])
+
+  const handlePointerCancel = useCallback(() => {
+    clearLongPress()
+    resetGesture()
+  }, [clearLongPress, resetGesture])
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    if (suppressClick.current) {
+      suppressClick.current = false
+      return
+    }
+    handleAction()
+  }, [handleAction])
 
   // Determine visuals
   let bg = ''
@@ -54,7 +127,6 @@ export const CellComponent = memo(function CellComponent({
     bg = 'bg-orange-500/10 border-orange-400/20'
     content = '🚩'
   } else if (isXray) {
-    // Cells highlighted by detector/sonar/xray effects
     const effectColor = effectType === 'sonar' ? 'bg-sky-500/20 border-sky-400/30'
       : effectType === 'detector' ? 'bg-amber-500/20 border-amber-400/30'
       : 'bg-purple-500/20 border-purple-400/30'
@@ -66,13 +138,11 @@ export const CellComponent = memo(function CellComponent({
       ? 'bg-violet-500/10 border-violet-400/15 hover:bg-violet-500/20'
       : 'bg-white/[.05] border-white/[.07] hover:bg-violet-500/10'
 
-    // DefuseArmed: cells near mines glow green
     if (defuseArmed && !cell.isRevealed) {
       bg = 'bg-emerald-500/15 border-emerald-400/25 hover:bg-emerald-500/25'
       anim = 'power-pulse 1.5s ease-in-out infinite'
     }
 
-    // LuckyActive: next cell guaranteed safe
     if (luckyActive && !cell.isRevealed) {
       bg = 'bg-lime-500/15 border-lime-400/25 hover:bg-lime-500/25'
       anim = 'power-pulse 1.5s ease-in-out infinite'
@@ -81,61 +151,31 @@ export const CellComponent = memo(function CellComponent({
     if (sp && !gameOver) bg += ' cell-shimmer'
   }
 
-  // Active power indicator overlay
   const showPowerBorder = !cell.isRevealed && !gameOver && (
     (defuseArmed && !cell.isFlagged) || (luckyActive && !cell.isFlagged)
   )
 
   return (
     <button
+      type="button"
       aria-label={cell.isRevealed ? (cell.isMine ? 'Mina' : cell.adjacentMines > 0 ? `${cell.adjacentMines} minas alrededor` : 'Vacía') : cell.isFlagged ? 'Casilla con bandera' : 'Casilla oculta'}
       className={`relative flex items-center justify-center border rounded select-none transition-colors duration-75 ${bg} ${!cell.isRevealed && !gameOver ? 'active:scale-[.85]' : ''}`}
       style={{ width: cellSize, height: cellSize, fontSize: fs, animation: anim || undefined }}
-      onClick={useCallback((e: React.MouseEvent) => {
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onClick={handleClick}
+      onContextMenu={useCallback((e: React.MouseEvent) => {
         e.preventDefault()
-        // On mobile: block the click if a touch just ended (timestamp approach — works on ALL browsers)
-        if (Date.now() - lastTouchEnd.current < 500) return
-        // Desktop: normal click
-        if (flagMode && !cell.isRevealed) onRightClick(cell.row, cell.col)
-        else onClick(cell.row, cell.col)
-      }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
-      onContextMenu={useCallback((e: React.MouseEvent) => { e.preventDefault(); onRightClick(cell.row, cell.col) }, [cell.row, cell.col, onRightClick])}
-      onTouchStart={useCallback((e: React.TouchEvent) => {
-        wasLp.current = false
-        touchMoved.current = false
-        const t = e.touches[0]
-        touchStartPos.current = { x: t.clientX, y: t.clientY }
-        lp.current = window.setTimeout(() => {
-          wasLp.current = true
-          onLongPress(cell.row, cell.col)
-          navigator.vibrate?.(20)
-        }, 400)
-      }, [cell.row, cell.col, onLongPress])}
-      onTouchEnd={useCallback(() => {
-        clearTimeout(lp.current)
-        lastTouchEnd.current = Date.now()
-        if (touchMoved.current) return
-        if (wasLp.current) { wasLp.current = false; return }
-        if (flagMode && !cell.isRevealed) onRightClick(cell.row, cell.col)
-        else onClick(cell.row, cell.col)
-      }, [cell.row, cell.col, onClick, onRightClick, flagMode, cell.isRevealed])}
-      onTouchMove={useCallback((e: React.TouchEvent) => {
-        if (!e.touches.length) { clearTimeout(lp.current); return }
-        const t = e.touches[0]
-        const dx = t.clientX - touchStartPos.current.x
-        const dy = t.clientY - touchStartPos.current.y
-        if (Math.abs(dx) > 15 || Math.abs(dy) > 15) {
-          clearTimeout(lp.current)
-          touchMoved.current = true
-        }
-      }, [])}
+        onRightClick(cell.row, cell.col)
+      }, [cell.row, cell.col, onRightClick])}
       disabled={gameOver}
     >
       {typeof content === 'string' ? <span style={{ fontSize: fs }}>{content}</span> : content}
       {cell.isRevealed && !cell.isMine && (
         <div className="absolute inset-0 rounded bg-white/10 pointer-events-none" style={{ animation: 'cell-flash .3s ease-out forwards' }} />
       )}
-      {/* Power active indicator ring */}
       {showPowerBorder && (
         <div className="absolute inset-[-2px] rounded border-2 pointer-events-none"
           style={{
