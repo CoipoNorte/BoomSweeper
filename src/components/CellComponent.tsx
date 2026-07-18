@@ -16,10 +16,10 @@ export const CellComponent = memo(function CellComponent({
   onClick, onRightClick, onLongPress, gameOver, shieldActive,
 }: Props) {
   const longPressTimer = useRef<number | null>(null)
-  const pointerId = useRef<number | null>(null)
-  const pointerStart = useRef({ x: 0, y: 0 })
+  const touchStartPos = useRef({ x: 0, y: 0 })
   const gestureMoved = useRef(false)
   const longPressTriggered = useRef(false)
+  const touchLocked = useRef(false)
   const suppressClick = useRef(false)
 
   const fs = Math.max(12, cellSize * 0.45)
@@ -34,7 +34,6 @@ export const CellComponent = memo(function CellComponent({
 
   const resetGesture = useCallback(() => {
     clearLongPress()
-    pointerId.current = null
     gestureMoved.current = false
     longPressTriggered.current = false
   }, [clearLongPress])
@@ -47,51 +46,58 @@ export const CellComponent = memo(function CellComponent({
     }
   }, [cell.isRevealed, cell.row, cell.col, flagMode, onClick, onRightClick])
 
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (gameOver || e.button === 2) return
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
+    if (gameOver) return
     e.preventDefault()
     suppressClick.current = true
-    pointerId.current = e.pointerId
-    pointerStart.current = { x: e.clientX, y: e.clientY }
+    touchLocked.current = false
     gestureMoved.current = false
     longPressTriggered.current = false
+    const t = e.touches[0]
+    touchStartPos.current = { x: t.clientX, y: t.clientY }
     clearLongPress()
     longPressTimer.current = window.setTimeout(() => {
       longPressTriggered.current = true
+      touchLocked.current = true
       onLongPress(cell.row, cell.col)
       navigator.vibrate?.(20)
     }, 380)
   }, [cell.row, cell.col, clearLongPress, gameOver, onLongPress])
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (pointerId.current === null || e.pointerId !== pointerId.current) return
-    const dx = e.clientX - pointerStart.current.x
-    const dy = e.clientY - pointerStart.current.y
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
+    if (!e.touches.length) return
+    const t = e.touches[0]
+    const dx = t.clientX - touchStartPos.current.x
+    const dy = t.clientY - touchStartPos.current.y
     if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
       gestureMoved.current = true
       clearLongPress()
     }
   }, [clearLongPress])
 
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (pointerId.current !== null && e.pointerId !== pointerId.current) return
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
     e.preventDefault()
     clearLongPress()
-    if (!gestureMoved.current && !longPressTriggered.current) {
+    if (longPressTriggered.current) {
+      resetGesture()
+      return
+    }
+    if (!gestureMoved.current) {
       handleAction()
     }
     resetGesture()
   }, [clearLongPress, handleAction, resetGesture])
 
-  const handlePointerCancel = useCallback(() => {
+  const handleTouchCancel = useCallback(() => {
     clearLongPress()
     resetGesture()
   }, [clearLongPress, resetGesture])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    if (suppressClick.current) {
+    if (suppressClick.current || touchLocked.current) {
       suppressClick.current = false
+      touchLocked.current = false
       return
     }
     handleAction()
@@ -161,10 +167,10 @@ export const CellComponent = memo(function CellComponent({
       aria-label={cell.isRevealed ? (cell.isMine ? 'Mina' : cell.adjacentMines > 0 ? `${cell.adjacentMines} minas alrededor` : 'Vacía') : cell.isFlagged ? 'Casilla con bandera' : 'Casilla oculta'}
       className={`relative flex items-center justify-center border rounded select-none transition-colors duration-75 ${bg} ${!cell.isRevealed && !gameOver ? 'active:scale-[.85]' : ''}`}
       style={{ width: cellSize, height: cellSize, fontSize: fs, animation: anim || undefined }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
       onClick={handleClick}
       onContextMenu={useCallback((e: React.MouseEvent) => {
         e.preventDefault()
