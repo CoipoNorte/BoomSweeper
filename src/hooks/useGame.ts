@@ -41,6 +41,7 @@ export function useGame() {
   const [defuseArmed, setDefuseArmed] = useState(false)
   const timerRef = useRef<number>(0)
   const freezeTimerRef = useRef<number>(0)
+  const pendingLongPressCells = useRef(new Set<string>())
 
   // Timer
   useEffect(() => {
@@ -369,10 +370,37 @@ export function useGame() {
   }, [])
 
   const handleCellLongPress = useCallback((row: number, col: number) => {
-    handleCellRightClick(row, col)
-  }, [handleCellRightClick])
+    setState(prev => {
+      if (prev.gameStatus !== 'playing' && prev.gameStatus !== 'idle') return prev
+
+      const key = `${row},${col}`
+      const board = prev.board.map(r => r.map(c => ({ ...c })))
+      const cell = board[row][col]
+
+      if (cell.isRevealed) return prev
+
+      if (cell.isFlagged && pendingLongPressCells.current.has(key)) {
+        pendingLongPressCells.current.delete(key)
+        board[row][col].isFlagged = false
+      } else if (!cell.isFlagged) {
+        pendingLongPressCells.current.add(key)
+        board[row][col].isFlagged = true
+      } else {
+        pendingLongPressCells.current.add(key)
+      }
+
+      const flags = countFlags(board)
+
+      return {
+        ...prev,
+        board,
+        minesLeft: DIFFICULTY_CONFIGS[prev.difficulty].mines - flags,
+      }
+    })
+  }, [])
 
   const startGame = useCallback((difficulty: Difficulty) => {
+    pendingLongPressCells.current.clear()
     setState(createInitialState(difficulty))
     setEffect({ type: 'detector', cells: [], active: false })
     setLuckyActive(false)
@@ -380,6 +408,7 @@ export function useGame() {
   }, [])
 
   const restartGame = useCallback(() => {
+    pendingLongPressCells.current.clear()
     setState(prev => createInitialState(prev.difficulty))
     setEffect({ type: 'detector', cells: [], active: false })
     setLuckyActive(false)
